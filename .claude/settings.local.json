@@ -8,7 +8,8 @@
       "Bash(npm test:*)",
       "Bash(npm run test:coverage:*)",
       "Bash(dir /s /b \"C:\\\\Repos\\\\Pegasus-App\\\\*.py\")",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(ls:*)"
     ]
   }
 }
