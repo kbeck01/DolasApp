@@ -8,6 +8,8 @@ export const colors = {
   background: '#FFFFFF',
   backgroundDark: '#1a1a2e',
   backgroundLight: '#F5F5F5',
+  backgroundSelected: '#FFF3ED',    // Selected card tint (primary-orange at ~10% opacity)
+  backgroundOverlay: 'rgba(255, 255, 255, 0.1)',  // Translucent white overlay (login hint)
 
   // Text Colors - High Contrast
   textPrimary: '#1a1a2e',

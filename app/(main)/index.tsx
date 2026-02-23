@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.primary,
   },
   jobCardSelected: {
-    backgroundColor: '#FFF3ED',
+    backgroundColor: colors.backgroundSelected,
   },
   cardRow: {
     flexDirection: 'row',

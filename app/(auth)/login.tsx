@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   hint: {
     marginTop: spacing.lg,
     padding: spacing.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: colors.backgroundOverlay,
     borderRadius: borderRadius.medium,
   },
   hintText: {
