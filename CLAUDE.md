@@ -179,7 +179,7 @@ Pegasus-App/
 
 - **No backend.** All data lives on the device. There is no API, no cloud sync, no remote auth. This is intentional for the MVP.
 - **Local-only auth.** Login stores an email in AsyncStorage. It is not verified against any server. This is a "who is using this device" identifier, not real authentication.
-- **No image persistence hardening.** Images are currently stored as `file://` URIs from `expo-image-picker`. These URIs may become invalid if the device clears its cache. **Future work: copy images to `FileSystem.documentDirectory` immediately after capture.** (See §9 for the hard rule once implemented.)
+- **Image persistence is implemented.** After capture, images are copied to `FileSystem.documentDirectory/pegasus_images/` before the URI is passed to classify.tsx. See §9 for the hard rule and implementation details.
 - **Single JSON blob persistence.** All jobs and all embedded documents are stored as one JSON string in AsyncStorage. This is fine for an MVP with small document counts but will not scale well to hundreds of jobs.
 - **No analytics.** `MockTransport` in the logger is a placeholder for Sentry or equivalent. Not wired up.
 - **No push notifications.**
@@ -510,16 +510,20 @@ All navigation must use **Expo Router** conventions. Never import directly from 
 Picker-assigned `file://` URIs are temporary and may be invalidated by the OS when the cache is cleared. The persistent path format is:
 
 ```typescript
-import { File, Paths } from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 
-const permanentDir = `${Paths.document}/pegasus_images/`;
-const permanentUri = `${permanentDir}${documentId}.jpg`;
-const sourceFile = new File(imageUri);
-const destFile = new File(permanentUri);
-// copy to permanent storage before persisting URI
+// In capture.tsx — copyImageToPermanentStorage():
+const dir = new Directory(Paths.document, 'pegasus_images');
+if (!dir.exists) {
+  dir.create();
+}
+const destFile = new File(Paths.document, `pegasus_images/${imageId}.jpg`);
+const srcFile = new File(pickerUri);
+srcFile.copy(destFile);
+return destFile.uri; // permanent URI passed to classify.tsx
 ```
 
-**Current state:** This is NOT yet implemented. Images currently store the raw picker URI. This is a known bug (see §10). When implementing this fix, it must be done in `capture.tsx` before the URI is passed to `classify.tsx`. All tests must be updated to use `Paths.document`-based URIs.
+**Current state:** Implemented in `app/(main)/capture.tsx` via `copyImageToPermanentStorage()`. Called inside `handleImageSelected()`, which both picker handlers delegate to. The raw picker URI never reaches `classify.tsx` — only the permanent URI does. If the copy fails, an alert is shown and navigation is blocked. Covered by 20 tests in `app/(main)/capture.test.tsx`.
 
 **CSV files (temp, intentional):** The generated CSV export is written to `Paths.cache` in `export.tsx`. This is correct and intentional — CSV files are ephemeral, generated on demand for sharing. Do not move them to document directory.
 
@@ -562,12 +566,6 @@ Request permissions immediately before the action that requires them — not on 
 ## 10. Known Issues and Technical Debt
 
 This section tracks existing problems. When working on a related feature, fix the relevant issue as part of that work rather than creating new technical debt around it.
-
-### Bug: Images Not Copied to Persistent Storage
-
-**Location:** `app/(main)/capture.tsx`, `src/services/jobService.ts`
-**Problem:** `expo-image-picker` returns a temporary `file://` URI. This URI is stored directly in AsyncStorage without being copied to `FileSystem.documentDirectory`. When the OS clears the image cache, the stored URI becomes invalid and the image cannot be displayed.
-**Fix required:** After image selection in `capture.tsx`, copy the image to `FileSystem.documentDirectory/pegasus_images/<documentId>.jpg` and pass the permanent URI to `classify.tsx` instead of the picker URI.
 
 ### Bug: `console.error` in AuthContext Bypasses Logger
 
