@@ -18,8 +18,7 @@
       "bundleIdentifier": "com.movingstorage.driverapp",
       "infoPlist": {
         "NSCameraUsageDescription": "This app requires camera access to capture proof of delivery photos.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select delivery photos.",
-        "NSLocationWhenInUseUsageDescription": "This app uses your location to optimize delivery routes and track order progress."
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select delivery photos."
       }
     },
     "android": {
@@ -31,10 +30,7 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
