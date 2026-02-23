@@ -107,6 +107,8 @@ Pegasus-App/
 │   ├── context/
 │   │   ├── AuthContext.tsx     Auth state: isAuthenticated, isLoading, driverEmail; login/logout
 │   │   └── JobContext.tsx      Current job state: currentJob, documents; all in-session mutations
+│   ├── constants/
+│   │   └── classifications.ts  CLASSIFICATIONS array, CLASSIFICATION_LABELS and _COLORS records
 │   ├── services/
 │   │   └── jobService.ts       All AsyncStorage CRUD operations and CSV generation (static class)
 │   ├── theme/
@@ -288,13 +290,16 @@ import { useAuth } from '../../src/context/AuthContext';
 // 6. Internal: services
 import { JobService } from '../../src/services/jobService';
 
-// 7. Internal: utilities
+// 7. Internal: constants
+import { CLASSIFICATIONS, CLASSIFICATION_LABELS } from '../../src/constants/classifications';
+
+// 8. Internal: utilities
 import { logger } from '../../src/utils/logger';
 
-// 8. Internal: types
+// 9. Internal: types
 import type { Job, Document, DocumentClassification } from '../../src/types';
 
-// 9. Internal: theme
+// 10. Internal: theme
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 ```
 
@@ -306,11 +311,11 @@ Namespace imports (`* as Name`) are used for: `expo-image-picker` (`* as ImagePi
 
 - **All user-facing strings must be defined as constants, not hardcoded inline.**
 - AsyncStorage keys are module-level `const` strings at the top of the file that uses them.
-- Classification label maps (`CLASSIFICATION_LABELS`) must live in `src/constants/classifications.ts` (to be created when the existing duplication is resolved). Until that refactor happens, do not add a fifth copy — consolidate first.
+- Classification constants (`CLASSIFICATIONS`, `CLASSIFICATION_LABELS`, `CLASSIFICATION_COLORS`) live in `src/constants/classifications.ts`. Import from there. Do not re-define these inline in any screen file.
 - Alert messages, button labels, placeholder text, and header titles that appear in more than one file must be extracted to a constants file.
 - One-off strings that appear exactly once in a leaf component may remain inline, but group them at the top of the component function as named constants rather than burying them in JSX.
 
-**Existing duplication to be aware of:** `CLASSIFICATIONS` (array with label/value/color) and `CLASSIFICATION_LABELS` (record mapping value to label) are currently duplicated across `classify.tsx`, `edit-document.tsx`, `confirmation.tsx`, and `export.tsx`. This is tracked in §10. Do not add a fifth copy.
+**Previously duplicated, now resolved:** `CLASSIFICATIONS`, `CLASSIFICATION_LABELS`, and `CLASSIFICATION_COLORS` were copy-pasted across four screen files. They now live exclusively in `src/constants/classifications.ts`. Do not re-introduce inline copies in screen files.
 
 ### Theme Usage
 
@@ -568,12 +573,6 @@ Request permissions immediately before the action that requires them — not on 
 ## 10. Known Issues and Technical Debt
 
 This section tracks existing problems. When working on a related feature, fix the relevant issue as part of that work rather than creating new technical debt around it.
-
-### Technical Debt: `CLASSIFICATION_LABELS` and `CLASSIFICATIONS` Duplicated
-
-**Locations:** `classify.tsx`, `edit-document.tsx`, `confirmation.tsx`, `export.tsx`
-**Problem:** Both the `CLASSIFICATIONS` array and `CLASSIFICATION_LABELS` record are copy-pasted across four files. Any change to a classification label must be made in four places.
-**Fix required:** Extract to `src/constants/classifications.ts` and import from there. This is a refactor — do it as a dedicated commit, not mixed with feature work.
 
 ### Technical Debt: Vestigial App.tsx / index.ts
 
