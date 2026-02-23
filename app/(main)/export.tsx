@@ -11,8 +11,6 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { File, Paths } from 'expo-file-system';
-import * as MailComposer from 'expo-mail-composer';
 import * as Sharing from 'expo-sharing';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
@@ -55,69 +53,6 @@ export default function ExportScreen() {
       await renameJob(job.id, trimmed);
     }
     setIsEditingName(false);
-  };
-
-  const generateCsvFile = async (): Promise<string> => {
-    if (!job) throw new Error('No job loaded');
-    const exportJob = { ...job, documents };
-    const csv = JobService.generateCsvExport(exportJob);
-    const filename = `pegasus_${job.jobNumber}_export.csv`;
-    const file = new File(Paths.cache, filename);
-    file.write(csv);
-    return file.uri;
-  };
-
-  const handleEmailCsv = async () => {
-    if (!job || isBusy) return;
-
-    setIsBusy(true);
-    try {
-      const available = await MailComposer.isAvailableAsync();
-      if (!available) {
-        Alert.alert('Mail Unavailable', 'No email account is configured on this device.');
-        return;
-      }
-
-      const uri = await generateCsvFile();
-      logger.logExport(job.id, documents.length);
-
-      await MailComposer.composeAsync({
-        subject: `Pegasus Job ${job.jobNumber} Documents`,
-        body: `Attached is the document export for Job ${job.jobNumber}.\n\n${documents.length} document(s) captured.`,
-        attachments: [uri],
-      });
-    } catch (error) {
-      logger.error('Email export failed', error);
-      Alert.alert('Export Error', 'Could not open email composer. Please try again.');
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleShare = async () => {
-    if (!job || isBusy) return;
-
-    setIsBusy(true);
-    try {
-      const available = await Sharing.isAvailableAsync();
-      if (!available) {
-        Alert.alert('Sharing Unavailable', 'Sharing is not available on this device.');
-        return;
-      }
-
-      const uri = await generateCsvFile();
-      logger.logExport(job.id, documents.length);
-
-      await Sharing.shareAsync(uri, {
-        mimeType: 'text/csv',
-        dialogTitle: `Pegasus Job ${job.jobNumber} Export`,
-      });
-    } catch (error) {
-      logger.error('Share export failed', error);
-      Alert.alert('Share Error', 'Could not open share sheet. Please try again.');
-    } finally {
-      setIsBusy(false);
-    }
   };
 
   const handleAddDocument = () => {
@@ -287,24 +222,6 @@ export default function ExportScreen() {
             <Text style={styles.busyText}>Preparing export...</Text>
           </View>
         ) : null}
-
-        <TouchableOpacity
-          style={[styles.button, styles.emailButton, (isBusy || documents.length === 0) && styles.buttonDisabled]}
-          onPress={handleEmailCsv}
-          disabled={isBusy || documents.length === 0}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.buttonText}>EMAIL CSV</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.shareButton, (isBusy || documents.length === 0) && styles.buttonDisabled]}
-          onPress={handleShare}
-          disabled={isBusy || documents.length === 0}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.buttonText}>SHARE / SAVE</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.zipButton, (isBusy || documents.length === 0) && styles.buttonDisabled]}
@@ -515,12 +432,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
-  },
-  emailButton: {
-    backgroundColor: colors.info,
-  },
-  shareButton: {
-    backgroundColor: colors.success,
   },
   zipButton: {
     backgroundColor: colors.purple,

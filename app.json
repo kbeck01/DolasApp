@@ -47,7 +47,6 @@
           "cameraPermission": "This app requires camera access to capture proof of delivery photos."
         }
       ],
-      "expo-mail-composer"
     ],
     "extra": {
       "router": {
