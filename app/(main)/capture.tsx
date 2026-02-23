@@ -13,11 +13,15 @@ import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/
 
 export default function CaptureScreen() {
   const router = useRouter();
-  const { jobId } = useLocalSearchParams<{ jobId: string }>();
+  const { jobId, editDocumentId } = useLocalSearchParams<{ jobId: string; editDocumentId?: string }>();
   const { currentJob, documents } = useJob();
 
   const navigateToClassify = (uri: string) => {
-    router.push(`/(main)/classify?jobId=${jobId}&imageUri=${encodeURIComponent(uri)}`);
+    let url = `/(main)/classify?jobId=${jobId}&imageUri=${encodeURIComponent(uri)}`;
+    if (editDocumentId) {
+      url += `&editDocumentId=${editDocumentId}`;
+    }
+    router.push(url);
   };
 
   const handleTakePhoto = async () => {

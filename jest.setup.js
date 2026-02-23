@@ -47,6 +47,10 @@ jest.mock('expo-router', () => ({
     push: jest.fn(),
     replace: jest.fn(),
     back: jest.fn(),
+    dismissAll: jest.fn(),
+  })),
+  useNavigation: jest.fn(() => ({
+    dispatch: jest.fn(),
   })),
   useLocalSearchParams: jest.fn(() => ({})),
   useFocusEffect: jest.fn((cb) => cb()),
@@ -55,6 +59,14 @@ jest.mock('expo-router', () => ({
   },
   Tabs: jest.fn(({ children }) => children),
   Link: jest.fn(({ children }) => children),
+}));
+
+// Mock @react-navigation/native
+jest.mock('@react-navigation/native', () => ({
+  CommonActions: {
+    reset: jest.fn((config) => ({ type: 'RESET', ...config })),
+    navigate: jest.fn((config) => ({ type: 'NAVIGATE', ...config })),
+  },
 }));
 
 // Mock expo-image-picker
@@ -147,6 +159,8 @@ jest.mock('./src/context/JobContext', () => {
       documents: [],
       startJob: jest.fn(),
       addDocument: jest.fn(),
+      updateDocument: jest.fn(),
+      reloadJob: jest.fn(() => Promise.resolve()),
       clearJob: jest.fn(),
     })),
   };

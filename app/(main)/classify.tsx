@@ -7,7 +7,8 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { CommonActions } from '@react-navigation/native';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
 import { DocumentClassification } from '../../src/types';
@@ -21,27 +22,67 @@ const CLASSIFICATIONS: { label: string; value: DocumentClassification; color: st
 ];
 
 export default function ClassifyScreen() {
-  const router = useRouter();
-  const { jobId, imageUri } = useLocalSearchParams<{ jobId: string; imageUri: string }>();
-  const { currentJob, documents, addDocument } = useJob();
+  const navigation = useNavigation();
+  const { jobId, imageUri, editDocumentId } = useLocalSearchParams<{
+    jobId: string;
+    imageUri: string;
+    editDocumentId?: string;
+  }>();
+  const { currentJob, documents, addDocument, updateDocument } = useJob();
   const [isSaving, setIsSaving] = useState(false);
 
   const decodedUri = imageUri ? decodeURIComponent(imageUri) : '';
+  const isEditing = !!editDocumentId;
 
   const handleClassify = async (classification: DocumentClassification) => {
     if (!jobId || !decodedUri || isSaving || !currentJob) return;
 
     setIsSaving(true);
-    const doc = await JobService.addDocument(
-      jobId,
-      decodedUri,
-      classification,
-      currentJob.jobNumber,
-      documents
-    );
-    addDocument(doc);
+
+    let documentId: string;
+
+    if (isEditing) {
+      const updated = await JobService.updateDocument(
+        jobId,
+        editDocumentId,
+        { imageUri: decodedUri, classification },
+        currentJob.jobNumber,
+        documents
+      );
+      if (!updated) { setIsSaving(false); return; }
+      updateDocument(editDocumentId, {
+        imageUri: updated.imageUri,
+        classification: updated.classification,
+        filename: updated.filename,
+        timestamp: updated.timestamp,
+      });
+      documentId = editDocumentId;
+    } else {
+      const doc = await JobService.addDocument(
+        jobId,
+        decodedUri,
+        classification,
+        currentJob.jobNumber,
+        documents
+      );
+      addDocument(doc);
+      documentId = doc.id;
+    }
+
     setIsSaving(false);
-    router.push(`/(main)/confirmation?jobId=${jobId}&documentId=${doc.id}`);
+
+    // Reset the stack so back from confirmation goes to job detail (export),
+    // not back through the capture pipeline
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 2,
+        routes: [
+          { name: 'index' },
+          { name: 'export', params: { jobId } },
+          { name: 'confirmation', params: { jobId, documentId } },
+        ],
+      })
+    );
   };
 
   return (

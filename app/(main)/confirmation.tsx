@@ -32,6 +32,17 @@ export default function ConfirmationScreen() {
     );
   }
 
+  const handleCaptureNext = () => {
+    // Replace confirmation with capture so the pipeline doesn't accumulate
+    // Stack becomes: [index, export, capture]
+    router.replace(`/(main)/capture?jobId=${jobId}`);
+  };
+
+  const handleFinishJob = () => {
+    // Go back to export (job detail) which is directly behind us after the stack reset
+    router.back();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -52,7 +63,7 @@ export default function ConfirmationScreen() {
         <View style={styles.actions}>
           <TouchableOpacity
             style={[styles.button, styles.captureNextButton]}
-            onPress={() => router.push(`/(main)/capture?jobId=${jobId}`)}
+            onPress={handleCaptureNext}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>CAPTURE NEXT</Text>
@@ -60,7 +71,7 @@ export default function ConfirmationScreen() {
 
           <TouchableOpacity
             style={[styles.button, styles.finishButton]}
-            onPress={() => router.replace(`/(main)/export?jobId=${jobId}`)}
+            onPress={handleFinishJob}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>FINISH JOB</Text>

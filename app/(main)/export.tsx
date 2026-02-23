@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { File, Paths } from 'expo-file-system';
 import * as MailComposer from 'expo-mail-composer';
 import * as Sharing from 'expo-sharing';
@@ -34,33 +34,26 @@ const CLASSIFICATION_COLORS: Record<string, string> = {
 export default function ExportScreen() {
   const router = useRouter();
   const { jobId } = useLocalSearchParams<{ jobId: string }>();
-  const { currentJob, documents, startJob, clearJob } = useJob();
-  const [csvFileUri, setCsvFileUri] = useState<string | null>(null);
-  const [isBusy, setIsBusy] = useState(false);
+  const { currentJob, documents, reloadJob, clearJob } = useJob();
+  const [isBusy, setIsBusy] = React.useState(false);
 
-  useEffect(() => {
-    if (!currentJob && jobId) {
-      loadJob();
-    }
-  }, []);
-
-  const loadJob = async () => {
-    const data = await JobService.getJobById(jobId!);
-    if (data) startJob(data);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      if (jobId) {
+        reloadJob(jobId);
+      }
+    }, [jobId])
+  );
 
   const job = currentJob;
 
-  const ensureCsvFile = async (): Promise<string> => {
-    if (csvFileUri) return csvFileUri;
+  const generateCsvFile = async (): Promise<string> => {
     if (!job) throw new Error('No job loaded');
-
     const exportJob = { ...job, documents };
     const csv = JobService.generateCsvExport(exportJob);
     const filename = `pegasus_${job.jobNumber}_export.csv`;
     const file = new File(Paths.cache, filename);
     file.write(csv);
-    setCsvFileUri(file.uri);
     return file.uri;
   };
 
@@ -75,7 +68,7 @@ export default function ExportScreen() {
         return;
       }
 
-      const uri = await ensureCsvFile();
+      const uri = await generateCsvFile();
       logger.logExport(job.id, documents.length);
 
       await MailComposer.composeAsync({
@@ -102,7 +95,7 @@ export default function ExportScreen() {
         return;
       }
 
-      const uri = await ensureCsvFile();
+      const uri = await generateCsvFile();
       logger.logExport(job.id, documents.length);
 
       await Sharing.shareAsync(uri, {
@@ -117,9 +110,37 @@ export default function ExportScreen() {
     }
   };
 
+  const handleAddDocument = () => {
+    router.push(`/(main)/capture?jobId=${jobId}`);
+  };
+
+  const handleEditDocument = (documentId: string) => {
+    router.push(`/(main)/edit-document?jobId=${jobId}&documentId=${documentId}`);
+  };
+
+  const handleDeleteJob = () => {
+    if (!job) return;
+    Alert.alert(
+      'Delete Job',
+      'Are you sure you want to delete this job? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await JobService.deleteJob(job.id);
+            clearJob();
+            router.dismissAll();
+          },
+        },
+      ]
+    );
+  };
+
   const handleDone = () => {
     clearJob();
-    router.replace('/(main)');
+    router.dismissAll();
   };
 
   if (!job) {
@@ -152,12 +173,14 @@ export default function ExportScreen() {
           </View>
         ) : (
           documents.map((doc, index) => (
-            <View
+            <TouchableOpacity
               key={doc.id}
               style={[
                 styles.docCard,
                 { borderLeftColor: CLASSIFICATION_COLORS[doc.classification] || colors.info },
               ]}
+              onPress={() => handleEditDocument(doc.id)}
+              activeOpacity={0.8}
             >
               <View style={styles.docHeader}>
                 <Text style={styles.docIndex}>{index + 1}</Text>
@@ -177,9 +200,17 @@ export default function ExportScreen() {
               <Text style={styles.docTimestamp}>
                 {new Date(doc.timestamp).toLocaleString()}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))
         )}
+
+        <TouchableOpacity
+          style={styles.addDocButton}
+          onPress={handleAddDocument}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.addDocText}>+ ADD DOCUMENT</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -214,6 +245,14 @@ export default function ExportScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>DONE</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={handleDeleteJob}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.deleteButtonText}>DELETE JOB</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -328,6 +367,23 @@ const styles = StyleSheet.create({
     color: colors.textDisabled,
     marginTop: spacing.xs,
   },
+  addDocButton: {
+    borderRadius: borderRadius.large,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    padding: spacing.lg,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    minHeight: touchTarget.minHeight,
+    justifyContent: 'center',
+  },
+  addDocText: {
+    fontSize: fontSize.xlarge,
+    fontWeight: '700',
+    color: colors.primary,
+    letterSpacing: 0.5,
+  },
   footer: {
     padding: spacing.md,
     gap: spacing.sm,
@@ -369,6 +425,22 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xlarge,
     fontWeight: '700',
     color: colors.textLight,
+    letterSpacing: 1,
+  },
+  deleteButton: {
+    borderRadius: borderRadius.medium,
+    padding: spacing.md,
+    alignItems: 'center',
+    minHeight: touchTarget.minHeight,
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  deleteButtonText: {
+    fontSize: fontSize.large,
+    fontWeight: '700',
+    color: colors.error,
     letterSpacing: 1,
   },
 });

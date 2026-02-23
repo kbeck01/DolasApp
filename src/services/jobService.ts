@@ -86,6 +86,47 @@ export class JobService {
     return doc;
   }
 
+  static async updateDocument(
+    jobId: string,
+    documentId: string,
+    updates: { imageUri?: string; classification?: DocumentClassification },
+    jobNumber: string,
+    existingDocuments: Document[]
+  ): Promise<Document | null> {
+    try {
+      const jobs = await this.getJobs();
+      const jobIndex = jobs.findIndex(j => j.id === jobId);
+      if (jobIndex === -1) return null;
+
+      const docIndex = jobs[jobIndex].documents.findIndex(d => d.id === documentId);
+      if (docIndex === -1) return null;
+
+      const doc = { ...jobs[jobIndex].documents[docIndex] };
+      const now = new Date().toISOString();
+
+      if (updates.imageUri !== undefined) {
+        doc.imageUri = updates.imageUri;
+      }
+      if (updates.classification !== undefined) {
+        doc.classification = updates.classification;
+        const classCount = existingDocuments.filter(
+          d => d.classification === updates.classification! && d.id !== documentId
+        ).length + 1;
+        doc.filename = `${jobNumber}_${updates.classification}_${classCount}.jpg`;
+      }
+      doc.timestamp = now;
+
+      jobs[jobIndex].documents[docIndex] = doc;
+      jobs[jobIndex].updatedAt = now;
+      await AsyncStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
+      logger.logDocumentClassify(documentId, doc.classification);
+      return doc;
+    } catch (error) {
+      logger.error('Error updating document', error);
+      return null;
+    }
+  }
+
   static async deleteJob(jobId: string): Promise<boolean> {
     try {
       const jobs = await this.getJobs();
@@ -102,7 +143,7 @@ export class JobService {
   static generateCsvExport(job: Job): string {
     const headers = 'job_id,filename,classification,timestamp';
     const rows = job.documents.map(
-      doc => `${job.id},${doc.filename},${doc.classification},${doc.timestamp}`
+      doc => `${job.jobNumber},${doc.filename},${doc.classification},${doc.timestamp}`
     );
     return [headers, ...rows].join('\n');
   }
