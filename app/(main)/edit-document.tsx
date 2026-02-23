@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useJob } from '../../src/context/JobContext';
@@ -30,7 +31,7 @@ const CLASSIFICATION_LABELS: Record<string, string> = {
 export default function EditDocumentScreen() {
   const router = useRouter();
   const { jobId, documentId } = useLocalSearchParams<{ jobId: string; documentId: string }>();
-  const { currentJob, documents, updateDocument } = useJob();
+  const { currentJob, documents, updateDocument, deleteDocument } = useJob();
   const [isSaving, setIsSaving] = useState(false);
 
   const document = documents.find(d => d.id === documentId);
@@ -67,6 +68,24 @@ export default function EditDocumentScreen() {
 
   const handleReplaceImage = () => {
     router.push(`/(main)/capture?jobId=${jobId}&editDocumentId=${documentId}`);
+  };
+
+  const handleDeleteDocument = () => {
+    Alert.alert(
+      'Delete Document',
+      'Are you sure you want to delete this document? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteDocument(jobId, documentId);
+            router.back();
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -115,6 +134,14 @@ export default function EditDocumentScreen() {
         activeOpacity={0.8}
       >
         <Text style={styles.replaceButtonText}>REPLACE IMAGE</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.deleteDocButton}
+        onPress={handleDeleteDocument}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.deleteDocButtonText}>DELETE DOCUMENT</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -220,6 +247,23 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xlarge,
     fontWeight: '700',
     color: colors.textLight,
+    letterSpacing: 1,
+  },
+  deleteDocButton: {
+    borderRadius: borderRadius.medium,
+    padding: spacing.lg,
+    alignItems: 'center',
+    minHeight: touchTarget.minHeight * 1.5,
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: colors.error,
+    marginTop: spacing.md,
+  },
+  deleteDocButtonText: {
+    fontSize: fontSize.xlarge,
+    fontWeight: '700',
+    color: colors.error,
     letterSpacing: 1,
   },
 });

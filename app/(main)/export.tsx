@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -9,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { File, Paths } from 'expo-file-system';
 import * as MailComposer from 'expo-mail-composer';
 import * as Sharing from 'expo-sharing';
@@ -33,9 +35,13 @@ const CLASSIFICATION_COLORS: Record<string, string> = {
 
 export default function ExportScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { jobId } = useLocalSearchParams<{ jobId: string }>();
-  const { currentJob, documents, reloadJob, clearJob } = useJob();
-  const [isBusy, setIsBusy] = React.useState(false);
+  const { currentJob, documents, renameJob, reloadJob, clearJob } = useJob();
+  const [isBusy, setIsBusy] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const inputRef = useRef<TextInput>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,6 +52,21 @@ export default function ExportScreen() {
   );
 
   const job = currentJob;
+
+  const handleStartEditing = () => {
+    if (!job) return;
+    setEditedName(job.jobNumber);
+    setIsEditingName(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!job) return;
+    const trimmed = editedName.trim();
+    if (trimmed && trimmed !== job.jobNumber) {
+      await renameJob(job.id, trimmed);
+    }
+    setIsEditingName(false);
+  };
 
   const generateCsvFile = async (): Promise<string> => {
     if (!job) throw new Error('No job loaded');
@@ -157,7 +178,37 @@ export default function ExportScreen() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.jobLabel}>JOB</Text>
-          <Text style={styles.jobNumber}>{job.jobNumber}</Text>
+          {isEditingName ? (
+            <View style={styles.jobNameRow}>
+              <TextInput
+                ref={inputRef}
+                style={styles.jobNameInput}
+                value={editedName}
+                onChangeText={setEditedName}
+                onSubmitEditing={handleSaveName}
+                onBlur={handleSaveName}
+                autoFocus
+                returnKeyType="done"
+                selectTextOnFocus
+              />
+              <TouchableOpacity
+                style={styles.editIconButton}
+                onPress={handleSaveName}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Text style={styles.editIcon}>{'\u2713'}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.jobNameRow}
+              onPress={handleStartEditing}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.jobNumber}>{job.jobNumber}</Text>
+              <Text style={styles.pencilIcon}>{'\u270F\uFE0F'}</Text>
+            </TouchableOpacity>
+          )}
           <View style={styles.countBadge}>
             <Text style={styles.countText}>
               {documents.length} document{documents.length !== 1 ? 's' : ''} captured
@@ -213,7 +264,7 @@ export default function ExportScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}>
         {isBusy ? (
           <View style={styles.busyIndicator}>
             <ActivityIndicator size="small" color={colors.primary} />
@@ -292,11 +343,38 @@ const styles = StyleSheet.create({
     color: colors.textDisabled,
     letterSpacing: 1,
   },
+  jobNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+  },
   jobNumber: {
     fontSize: fontSize.huge,
     fontWeight: '700',
     color: colors.textPrimary,
-    marginTop: spacing.xs,
+  },
+  pencilIcon: {
+    fontSize: fontSize.xlarge,
+    marginLeft: spacing.sm,
+  },
+  jobNameInput: {
+    fontSize: fontSize.huge,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+    paddingVertical: spacing.xs,
+    minWidth: 120,
+    textAlign: 'center',
+  },
+  editIconButton: {
+    marginLeft: spacing.sm,
+    padding: spacing.xs,
+  },
+  editIcon: {
+    fontSize: fontSize.xxlarge,
+    color: colors.success,
+    fontWeight: '700',
   },
   countBadge: {
     backgroundColor: colors.backgroundDark,
@@ -386,7 +464,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: spacing.md,
-    gap: spacing.sm,
+    gap: spacing.xs,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.background,
@@ -395,18 +473,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   busyText: {
-    fontSize: fontSize.large,
+    fontSize: fontSize.medium,
     color: colors.textSecondary,
     marginLeft: spacing.sm,
   },
   button: {
     borderRadius: borderRadius.medium,
-    padding: spacing.lg,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
-    minHeight: touchTarget.minHeight * 1.5,
+    minHeight: touchTarget.minHeight,
     justifyContent: 'center',
   },
   buttonDisabled: {
@@ -422,14 +501,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   buttonText: {
-    fontSize: fontSize.xlarge,
+    fontSize: fontSize.medium,
     fontWeight: '700',
     color: colors.textLight,
     letterSpacing: 1,
   },
   deleteButton: {
     borderRadius: borderRadius.medium,
-    padding: spacing.md,
+    paddingVertical: 10,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
     minHeight: touchTarget.minHeight,
     justifyContent: 'center',
@@ -438,7 +518,7 @@ const styles = StyleSheet.create({
     borderColor: colors.error,
   },
   deleteButtonText: {
-    fontSize: fontSize.large,
+    fontSize: fontSize.medium,
     fontWeight: '700',
     color: colors.error,
     letterSpacing: 1,

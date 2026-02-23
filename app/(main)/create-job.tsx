@@ -20,7 +20,7 @@ export default function CreateJobScreen() {
 
   const handleCreate = async () => {
     if (!jobNumber.trim()) {
-      Alert.alert('Error', 'Please enter a job number');
+      Alert.alert('Error', 'Please enter a job name');
       return;
     }
 
@@ -35,10 +35,10 @@ export default function CreateJobScreen() {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>JOB NUMBER</Text>
+          <Text style={styles.label}>JOB NAME</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter job number"
+            placeholder="Enter job name"
             placeholderTextColor={colors.textDisabled}
             value={jobNumber}
             onChangeText={setJobNumber}

@@ -160,6 +160,8 @@ jest.mock('./src/context/JobContext', () => {
       startJob: jest.fn(),
       addDocument: jest.fn(),
       updateDocument: jest.fn(),
+      deleteDocument: jest.fn(() => Promise.resolve(true)),
+      renameJob: jest.fn(() => Promise.resolve(true)),
       reloadJob: jest.fn(() => Promise.resolve()),
       clearJob: jest.fn(),
     })),

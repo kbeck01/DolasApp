@@ -69,7 +69,7 @@ export default function CaptureScreen() {
         ) : null}
 
         <Text style={styles.heading}>Capture Document</Text>
-        <Text style={styles.subheading}>Take a photo or choose from your library</Text>
+        <Text style={styles.subheading}>Take a photo or choose from your gallery</Text>
 
         <TouchableOpacity
           style={[styles.button, styles.cameraButton]}
@@ -84,7 +84,7 @@ export default function CaptureScreen() {
           onPress={handleChooseFromLibrary}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>CHOOSE FROM LIBRARY</Text>
+          <Text style={styles.buttonText}>CHOOSE FROM GALLERY</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useJob } from '../../src/context/JobContext';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
@@ -19,6 +20,7 @@ const CLASSIFICATION_LABELS: Record<string, string> = {
 
 export default function ConfirmationScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { jobId, documentId } = useLocalSearchParams<{ jobId: string; documentId: string }>();
   const { documents } = useJob();
 
@@ -38,14 +40,14 @@ export default function ConfirmationScreen() {
     router.replace(`/(main)/capture?jobId=${jobId}`);
   };
 
-  const handleFinishJob = () => {
+  const handleReturnToDetails = () => {
     // Go back to export (job detail) which is directly behind us after the stack reset
     router.back();
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingBottom: Math.max(insets.bottom, spacing.xl) }]}>
         <Image source={{ uri: document.imageUri }} style={styles.thumbnail} resizeMode="contain" />
 
         <View style={styles.details}>
@@ -70,11 +72,11 @@ export default function ConfirmationScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.finishButton]}
-            onPress={handleFinishJob}
+            style={[styles.button, styles.returnButton]}
+            onPress={handleReturnToDetails}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>FINISH JOB</Text>
+            <Text style={styles.buttonText}>RETURN TO DETAILS</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -143,7 +145,7 @@ const styles = StyleSheet.create({
   captureNextButton: {
     backgroundColor: colors.primary,
   },
-  finishButton: {
+  returnButton: {
     backgroundColor: colors.success,
   },
   buttonText: {

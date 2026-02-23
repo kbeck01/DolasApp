@@ -8,6 +8,8 @@ interface JobContextType {
   startJob: (job: Job) => void;
   addDocument: (document: Document) => void;
   updateDocument: (documentId: string, updates: { imageUri?: string; classification?: DocumentClassification; filename?: string; timestamp?: string }) => void;
+  deleteDocument: (jobId: string, documentId: string) => Promise<boolean>;
+  renameJob: (jobId: string, jobNumber: string) => Promise<boolean>;
   reloadJob: (jobId: string) => Promise<void>;
   clearJob: () => void;
 }
@@ -49,6 +51,30 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, []);
 
+  const deleteDocument = useCallback(async (jobId: string, documentId: string) => {
+    const success = await JobService.deleteDocument(jobId, documentId);
+    if (success) {
+      setDocuments(prev => prev.filter(d => d.id !== documentId));
+      setCurrentJob(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          documents: prev.documents.filter(d => d.id !== documentId),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+    }
+    return success;
+  }, []);
+
+  const renameJob = useCallback(async (jobId: string, jobNumber: string) => {
+    const success = await JobService.renameJob(jobId, jobNumber);
+    if (success) {
+      setCurrentJob(prev => prev ? { ...prev, jobNumber, updatedAt: new Date().toISOString() } : prev);
+    }
+    return success;
+  }, []);
+
   const reloadJob = useCallback(async (jobId: string) => {
     const job = await JobService.getJobById(jobId);
     if (job) {
@@ -70,6 +96,8 @@ export const JobProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         startJob,
         addDocument,
         updateDocument,
+        deleteDocument,
+        renameJob,
         reloadJob,
         clearJob,
       }}

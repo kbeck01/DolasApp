@@ -127,6 +127,38 @@ export class JobService {
     }
   }
 
+  static async deleteDocument(jobId: string, documentId: string): Promise<boolean> {
+    try {
+      const jobs = await this.getJobs();
+      const jobIndex = jobs.findIndex(j => j.id === jobId);
+      if (jobIndex === -1) return false;
+      const docIndex = jobs[jobIndex].documents.findIndex(d => d.id === documentId);
+      if (docIndex === -1) return false;
+      jobs[jobIndex].documents.splice(docIndex, 1);
+      jobs[jobIndex].updatedAt = new Date().toISOString();
+      await AsyncStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
+      return true;
+    } catch (error) {
+      logger.error('Error deleting document', error);
+      return false;
+    }
+  }
+
+  static async renameJob(jobId: string, jobNumber: string): Promise<boolean> {
+    try {
+      const jobs = await this.getJobs();
+      const jobIndex = jobs.findIndex(j => j.id === jobId);
+      if (jobIndex === -1) return false;
+      jobs[jobIndex].jobNumber = jobNumber;
+      jobs[jobIndex].updatedAt = new Date().toISOString();
+      await AsyncStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
+      return true;
+    } catch (error) {
+      logger.error('Error renaming job', error);
+      return false;
+    }
+  }
+
   static async deleteJob(jobId: string): Promise<boolean> {
     try {
       const jobs = await this.getJobs();
@@ -140,10 +172,37 @@ export class JobService {
     }
   }
 
+  static async deleteJobs(jobIds: string[]): Promise<boolean> {
+    try {
+      const jobs = await this.getJobs();
+      const idSet = new Set(jobIds);
+      const filtered = jobs.filter(j => !idSet.has(j.id));
+      await AsyncStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(filtered));
+      return true;
+    } catch (error) {
+      logger.error('Error deleting jobs', error);
+      return false;
+    }
+  }
+
+  static formatTimestampLocal(iso: string): string {
+    const date = new Date(iso);
+    const formatted = date.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZoneName: 'short',
+    });
+    return formatted;
+  }
+
   static generateCsvExport(job: Job): string {
     const headers = 'job_id,filename,classification,timestamp';
     const rows = job.documents.map(
-      doc => `${job.jobNumber},${doc.filename},${doc.classification},${doc.timestamp}`
+      doc => `${job.jobNumber},${doc.filename},${doc.classification},${this.formatTimestampLocal(doc.timestamp)}`
     );
     return [headers, ...rows].join('\n');
   }

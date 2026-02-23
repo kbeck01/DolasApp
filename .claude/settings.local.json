@@ -9,7 +9,9 @@
       "Bash(npm run test:coverage:*)",
       "Bash(dir /s /b \"C:\\\\Repos\\\\Pegasus-App\\\\*.py\")",
       "Bash(findstr:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx jest --no-cache)"
     ]
   }
 }
