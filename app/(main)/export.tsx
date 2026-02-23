@@ -110,11 +110,6 @@ export default function ExportScreen() {
     }
   };
 
-  const handleDone = () => {
-    clearJob();
-    router.dismissAll();
-  };
-
   if (!job) {
     return (
       <View style={styles.loadingContainer}>
@@ -230,14 +225,6 @@ export default function ExportScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>EXPORT ZIP</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.doneButton]}
-          onPress={handleDone}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.buttonText}>DONE</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -435,9 +422,6 @@ const styles = StyleSheet.create({
   },
   zipButton: {
     backgroundColor: colors.purple,
-  },
-  doneButton: {
-    backgroundColor: colors.primary,
   },
   buttonText: {
     fontSize: fontSize.medium,
