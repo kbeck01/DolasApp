@@ -16,6 +16,7 @@ import * as MailComposer from 'expo-mail-composer';
 import * as Sharing from 'expo-sharing';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
+import { generateJobZip } from '../../src/utils/exportUtils';
 import { logger } from '../../src/utils/logger';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
@@ -159,6 +160,33 @@ export default function ExportScreen() {
     );
   };
 
+  const handleExportZip = async () => {
+    if (!job || isBusy) return;
+
+    setIsBusy(true);
+    try {
+      const available = await Sharing.isAvailableAsync();
+      if (!available) {
+        Alert.alert('Sharing Unavailable', 'Sharing is not available on this device.');
+        return;
+      }
+
+      const exportJob = { ...job, documents };
+      const zipUri = await generateJobZip(exportJob);
+      logger.logExport(job.id, documents.length);
+
+      await Sharing.shareAsync(zipUri, {
+        mimeType: 'application/zip',
+        dialogTitle: `Pegasus Job ${job.jobNumber} Export`,
+      });
+    } catch (error) {
+      logger.error('Zip export failed', error);
+      Alert.alert('Export Error', 'Could not create zip export. Please try again.');
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   const handleDone = () => {
     clearJob();
     router.dismissAll();
@@ -288,6 +316,15 @@ export default function ExportScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>SHARE / SAVE</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.zipButton, (isBusy || documents.length === 0) && styles.buttonDisabled]}
+          onPress={handleExportZip}
+          disabled={isBusy || documents.length === 0}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.buttonText}>EXPORT ZIP</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -496,6 +533,9 @@ const styles = StyleSheet.create({
   },
   shareButton: {
     backgroundColor: colors.success,
+  },
+  zipButton: {
+    backgroundColor: colors.purple,
   },
   doneButton: {
     backgroundColor: colors.primary,

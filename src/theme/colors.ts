@@ -32,6 +32,7 @@ export const colors = {
   warning: '#FDB813',
   error: '#EE5A6F',
   info: '#2E86DE',
+  purple: '#7B2FBE',
 };
 
 export const spacing = {
