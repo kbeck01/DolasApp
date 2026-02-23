@@ -580,12 +580,6 @@ This section tracks existing problems. When working on a related feature, fix th
 **Problem:** `package.json` sets `"main": "expo-router/entry"`, so Expo Router handles the real entry point. `index.ts` and `App.tsx` are never executed by the running app. They exist only as the compilation target for `App.test.tsx`. This is misleading.
 **Current stance:** Leave in place — removing them would break the only existing test. When a proper test infrastructure is established (tests for actual screens), migrate `App.test.tsx` and then delete these files.
 
-### Technical Debt: `logNavigation` Never Called
-
-**Location:** `src/utils/logger.ts`, every screen file
-**Problem:** `logger.logNavigation(screen)` is defined but never called. Navigation events are never logged.
-**Fix required:** Add `logger.logNavigation('ScreenName')` calls to the `useFocusEffect` in each screen, or to the layout files via a navigation listener.
-
 ### Technical Debt: Unused Color Tokens
 
 **Location:** `src/theme/colors.ts`
