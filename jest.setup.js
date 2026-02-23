@@ -101,6 +101,7 @@ jest.mock('expo-file-system', () => {
     }
     write() {}
     text() { return Promise.resolve(''); }
+    bytes() { return Promise.resolve(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])); }
     get exists() { return false; }
     create() {}
     delete() {}
@@ -167,6 +168,16 @@ jest.mock('./src/context/JobContext', () => {
       clearJob: jest.fn(),
     })),
   };
+});
+
+// Mock jszip
+jest.mock('jszip', () => {
+  return jest.fn().mockImplementation(() => ({
+    file: jest.fn().mockReturnThis(),
+    generateAsync: jest.fn(() =>
+      Promise.resolve(new Uint8Array([0x50, 0x4b, 0x03, 0x04]))
+    ),
+  }));
 });
 
 // Mock logger
