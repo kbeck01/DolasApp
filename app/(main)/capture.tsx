@@ -8,13 +8,46 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { File, Directory, Paths } from 'expo-file-system';
+
 import { useJob } from '../../src/context/JobContext';
+import { logger } from '../../src/utils/logger';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
+
+const IMAGES_DIR = 'pegasus_images';
+
+// Exported for testing.
+export function generateImageId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+// Exported for testing.
+export async function copyImageToPermanentStorage(pickerUri: string): Promise<string> {
+  const dir = new Directory(Paths.document, IMAGES_DIR);
+  if (!dir.exists) {
+    dir.create();
+  }
+  const imageId = generateImageId();
+  const destFile = new File(Paths.document, `${IMAGES_DIR}/${imageId}.jpg`);
+  const srcFile = new File(pickerUri);
+  srcFile.copy(destFile);
+  return destFile.uri;
+}
 
 export default function CaptureScreen() {
   const router = useRouter();
   const { jobId, editDocumentId } = useLocalSearchParams<{ jobId: string; editDocumentId?: string }>();
   const { currentJob, documents } = useJob();
+
+  const handleImageSelected = async (pickerUri: string) => {
+    try {
+      const permanentUri = await copyImageToPermanentStorage(pickerUri);
+      navigateToClassify(permanentUri);
+    } catch (error) {
+      logger.error('Failed to save image to permanent storage', error);
+      Alert.alert('Save Failed', 'Could not save the image. Please try again.');
+    }
+  };
 
   const navigateToClassify = (uri: string) => {
     let url = `/(main)/classify?jobId=${jobId}&imageUri=${encodeURIComponent(uri)}`;
@@ -36,7 +69,7 @@ export default function CaptureScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      navigateToClassify(result.assets[0].uri);
+      await handleImageSelected(result.assets[0].uri);
     }
   };
 
@@ -52,7 +85,7 @@ export default function CaptureScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      navigateToClassify(result.assets[0].uri);
+      await handleImageSelected(result.assets[0].uri);
     }
   };
 
