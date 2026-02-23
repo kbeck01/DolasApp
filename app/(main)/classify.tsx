@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,16 +7,18 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useFocusEffect } from 'expo-router';
 import { CommonActions } from '@react-navigation/native';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
 import { CLASSIFICATIONS } from '../../src/constants/classifications';
+import { logger } from '../../src/utils/logger';
 import { DocumentClassification } from '../../src/types';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
 export default function ClassifyScreen() {
   const navigation = useNavigation();
+  useFocusEffect(useCallback(() => { logger.logNavigation('ClassifyScreen'); }, []));
   const { jobId, imageUri, editDocumentId } = useLocalSearchParams<{
     jobId: string;
     imageUri: string;

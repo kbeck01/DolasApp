@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,17 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useJob } from '../../src/context/JobContext';
 import { CLASSIFICATION_LABELS } from '../../src/constants/classifications';
+import { logger } from '../../src/utils/logger';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
 export default function ConfirmationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  useFocusEffect(useCallback(() => { logger.logNavigation('ConfirmationScreen'); }, []));
   const { jobId, documentId } = useLocalSearchParams<{ jobId: string; documentId: string }>();
   const { documents } = useJob();
 

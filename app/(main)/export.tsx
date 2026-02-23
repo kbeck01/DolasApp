@@ -33,6 +33,7 @@ export default function ExportScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      logger.logNavigation('ExportScreen');
       if (jobId) {
         reloadJob(jobId);
       }

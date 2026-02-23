@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,10 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
+import { logger } from '../../src/utils/logger';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
 export default function CreateJobScreen() {
@@ -17,6 +18,8 @@ export default function CreateJobScreen() {
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
   const { startJob } = useJob();
+
+  useFocusEffect(useCallback(() => { logger.logNavigation('CreateJobScreen'); }, []));
 
   const handleCreate = async () => {
     if (!jobNumber.trim()) {

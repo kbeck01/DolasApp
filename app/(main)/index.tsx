@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
+import { logger } from '../../src/utils/logger';
 import { Job } from '../../src/types';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
@@ -28,6 +29,7 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      logger.logNavigation('HomeScreen');
       clearJob();
       loadJobs();
     }, [])

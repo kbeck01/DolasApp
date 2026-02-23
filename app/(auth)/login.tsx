@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,17 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
+import { logger } from '../../src/utils/logger';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+
+  useFocusEffect(useCallback(() => { logger.logNavigation('LoginScreen'); }, []));
 
   const handleLogin = async () => {
     if (!email) {

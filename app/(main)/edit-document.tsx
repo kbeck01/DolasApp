@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,17 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
 import { CLASSIFICATIONS, CLASSIFICATION_LABELS } from '../../src/constants/classifications';
+import { logger } from '../../src/utils/logger';
 import { DocumentClassification } from '../../src/types';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
 
 export default function EditDocumentScreen() {
   const router = useRouter();
+  useFocusEffect(useCallback(() => { logger.logNavigation('EditDocumentScreen'); }, []));
   const { jobId, documentId } = useLocalSearchParams<{ jobId: string; documentId: string }>();
   const { currentJob, documents, updateDocument, deleteDocument } = useJob();
   const [isSaving, setIsSaving] = useState(false);

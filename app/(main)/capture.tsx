@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { File, Directory, Paths } from 'expo-file-system';
 
@@ -38,6 +38,8 @@ export default function CaptureScreen() {
   const router = useRouter();
   const { jobId, editDocumentId } = useLocalSearchParams<{ jobId: string; editDocumentId?: string }>();
   const { currentJob, documents } = useJob();
+
+  useFocusEffect(useCallback(() => { logger.logNavigation('CaptureScreen'); }, []));
 
   const handleImageSelected = async (pickerUri: string) => {
     try {
