@@ -124,6 +124,7 @@ Pegasus-App/
 ├── App.tsx                     Vestigial stub — renders static image; only used by App.test.tsx
 ├── App.test.tsx                 The only existing test file (covers App.tsx stub only)
 ├── index.ts                    Registers App.tsx via registerRootComponent (never run — see §4)
+├── metro.config.js             Metro bundler config — blockList excludes *.test.* files from bundle
 ├── jest.config.js              Jest configuration
 ├── jest.setup.js               Global mocks for all native/Expo modules
 ├── app.json                    Expo app configuration
