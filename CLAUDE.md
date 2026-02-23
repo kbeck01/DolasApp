@@ -580,12 +580,6 @@ This section tracks existing problems. When working on a related feature, fix th
 **Problem:** `package.json` sets `"main": "expo-router/entry"`, so Expo Router handles the real entry point. `index.ts` and `App.tsx` are never executed by the running app. They exist only as the compilation target for `App.test.tsx`. This is misleading.
 **Current stance:** Leave in place — removing them would break the only existing test. When a proper test infrastructure is established (tests for actual screens), migrate `App.test.tsx` and then delete these files.
 
-### Technical Debt: Two Hardcoded Colors Outside Theme
-
-**Location 1:** `app/(main)/index.tsx` line ~220 — `'#FFF3ED'` (selected card background)
-**Location 2:** `app/(auth)/login.tsx` line ~153 — `'rgba(255, 255, 255, 0.1)'` (hint text background)
-**Fix required:** Add named tokens to `colors.ts` and replace inline values.
-
 ### Compliance: Unused Permissions in app.json
 
 **See §4.** Must be removed before Play Store or App Store submission.
