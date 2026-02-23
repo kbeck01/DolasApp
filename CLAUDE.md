@@ -68,6 +68,7 @@ Drivers employed by moving and storage companies. The UI is designed for field u
 | Filesystem | expo-file-system | ~19.0.21 (class-based v19 API) |
 | Email export | expo-mail-composer | ~15.0.8 |
 | Share sheet | expo-sharing | ~14.0.8 |
+| Zip archive | jszip | ^3.10.1 |
 | Safe area | react-native-safe-area-context | ~5.6.0 |
 | Screen transitions | react-native-screens | ~4.16.0 |
 | Testing | Jest | ^29.7.0 |
@@ -113,6 +114,7 @@ Pegasus-App/
 │   ├── types/
 │   │   └── index.ts            TypeScript interfaces: Job, Document; type: DocumentClassification
 │   └── utils/
+│       ├── exportUtils.ts      generateJobZip(job): builds zip (CSV + images/), writes to Paths.cache
 │       └── logger.ts           Logger singleton with ConsoleTransport (dev) / MockTransport (prod)
 │
 ├── assets/                     Static image assets (icon, splash, favicon, adaptive icon)
