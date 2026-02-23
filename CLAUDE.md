@@ -569,12 +569,6 @@ Request permissions immediately before the action that requires them — not on 
 
 This section tracks existing problems. When working on a related feature, fix the relevant issue as part of that work rather than creating new technical debt around it.
 
-### Bug: `console.error` in AuthContext Bypasses Logger
-
-**Location:** `src/context/AuthContext.tsx:35` (inside `checkSession` error handler)
-**Problem:** Uses `console.error` directly instead of `logger.error()`. In production, `MockTransport` suppresses logs — but this `console.error` will always print.
-**Fix required:** Replace with `logger.error('Error checking session', error)`.
-
 ### Technical Debt: `CLASSIFICATION_LABELS` and `CLASSIFICATIONS` Duplicated
 
 **Locations:** `classify.tsx`, `edit-document.tsx`, `confirmation.tsx`, `export.tsx`
