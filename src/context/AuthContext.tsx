@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsAuthenticated(true);
       }
     } catch (error) {
-      console.error('Error checking session:', error);
+      logger.error('Error checking session', error);
     } finally {
       setIsLoading(false);
     }
