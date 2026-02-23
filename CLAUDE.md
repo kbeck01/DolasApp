@@ -321,7 +321,7 @@ Namespace imports (`* as Name`) are used for: `expo-image-picker` (`* as ImagePi
 
 - All colors must come from `src/theme/colors.ts`. The only exceptions are `rgba()` variants that cannot be expressed as hex tokens — these must be added to the theme file, not left inline.
 - Two known violations exist (see §10). Fix them rather than adding more.
-- Do not use unused color tokens (`pending`, `inTransit`, `delivered`, `cancelled`, `primaryDark`, `shadow`, `borderDark`) in new code — they are legacy tokens from a prior version of the app.
+- Do not introduce new color tokens without a concrete use — the seven legacy status/shadow tokens (`pending`, `inTransit`, `delivered`, `cancelled`, `primaryDark`, `shadow`, `borderDark`) were removed in chore(colors) after being confirmed unused.
 - All spacing, font sizes, border radii, and touch targets must use the exported design tokens.
 
 ---
@@ -579,13 +579,6 @@ This section tracks existing problems. When working on a related feature, fix th
 **Location:** `App.tsx`, `index.ts`
 **Problem:** `package.json` sets `"main": "expo-router/entry"`, so Expo Router handles the real entry point. `index.ts` and `App.tsx` are never executed by the running app. They exist only as the compilation target for `App.test.tsx`. This is misleading.
 **Current stance:** Leave in place — removing them would break the only existing test. When a proper test infrastructure is established (tests for actual screens), migrate `App.test.tsx` and then delete these files.
-
-### Technical Debt: Unused Color Tokens
-
-**Location:** `src/theme/colors.ts`
-**Tokens:** `pending`, `inTransit`, `delivered`, `cancelled`, `primaryDark`, `shadow`, `borderDark`
-**Problem:** These are remnants of the app's prior incarnation as a delivery-tracking system. They are defined but never referenced.
-**Fix required:** Remove in a dedicated `chore(colors)` commit when confirmed unused by a codebase-wide search.
 
 ### Technical Debt: Two Hardcoded Colors Outside Theme
 
