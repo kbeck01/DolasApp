@@ -104,6 +104,7 @@ jest.mock('expo-file-system', () => {
     get exists() { return false; }
     create() {}
     delete() {}
+    copy(destination) { return destination; }
   }
   class MockDirectory {
     constructor(...uris) {
