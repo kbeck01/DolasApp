@@ -17,7 +17,7 @@ function RootLayoutNav() {
     if (!isAuthenticated && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)');
+      router.replace('/(main)');
     }
   }, [isAuthenticated, isLoading, segments]);
 
@@ -36,8 +36,7 @@ function RootLayoutNav() {
       }}
     >
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="order" options={{ headerShown: true }} />
+      <Stack.Screen name="(main)" options={{ headerShown: false }} />
     </Stack>
   );
 }

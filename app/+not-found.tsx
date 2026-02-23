@@ -8,8 +8,8 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Not Found' }} />
       <View style={styles.container}>
         <Text style={styles.title}>Screen Not Found</Text>
-        <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to Dashboard</Text>
+        <Link href="/(main)" style={styles.link}>
+          <Text style={styles.linkText}>Go to Home</Text>
         </Link>
       </View>
     </>

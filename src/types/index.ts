@@ -1,72 +1,18 @@
-export interface TruckingOrder {
-  orderId: string;
-  orderNumber: string;
+export type DocumentClassification = 'bill_of_lading' | 'proof_of_delivery' | 'receipt' | 'inventory';
 
-  pickup: {
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    coordinates?: {
-      latitude: number;
-      longitude: number;
-    };
-    scheduledDate: string;
-    actualDate?: string;
-  };
+export interface Document {
+  id: string;
+  jobId: string;
+  imageUri: string;
+  classification: DocumentClassification;
+  timestamp: string;
+  filename: string;
+}
 
-  dropoff: {
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    coordinates?: {
-      latitude: number;
-      longitude: number;
-    };
-    scheduledDate: string;
-    actualDate?: string;
-  };
-
-  inventory: InventoryItem[];
-
-  customer: {
-    name: string;
-    phone: string;
-    email: string;
-    notes?: string;
-  };
-
-  status: 'pending' | 'in_transit' | 'delivered' | 'cancelled';
-
-  proofOfDelivery?: {
-    photos: string[];
-    signature?: string;
-    deliveredAt: string;
-    notes?: string;
-  };
-
-  assignedDriverId: string;
+export interface Job {
+  id: string;
+  jobNumber: string;
+  documents: Document[];
   createdAt: string;
   updatedAt: string;
 }
-
-export interface InventoryItem {
-  id: string;
-  description: string;
-  quantity: number;
-  weight?: number;
-  fragile: boolean;
-  notes?: string;
-}
-
-export interface Driver {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  licenseNumber: string;
-  truckId?: string;
-}
-
-export type OrderStatus = 'pending' | 'in_transit' | 'delivered' | 'cancelled';

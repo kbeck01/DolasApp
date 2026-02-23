@@ -67,25 +67,24 @@ class Logger {
     this.info(`Auth: ${action}`, { email });
   }
 
-  logOrderStatusChange(orderId: string, fromStatus: string, toStatus: string) {
-    this.info(`Order status changed: ${orderId}`, {
-      from: fromStatus,
-      to: toStatus,
-    });
-  }
-
-  logCameraCapture(orderId: string, photoCount: number) {
-    this.info(`Camera: Photo captured for order ${orderId}`, {
-      totalPhotos: photoCount,
-    });
-  }
-
-  logOrderLoad(count: number) {
-    this.debug(`Orders loaded`, { count });
-  }
-
   logNavigation(screen: string) {
     this.debug(`Navigation: ${screen}`);
+  }
+
+  logJobCreate(jobId: string, jobNumber: string) {
+    this.info(`Job created: ${jobId}`, { jobNumber });
+  }
+
+  logDocumentCapture(jobId: string, imageUri: string) {
+    this.info(`Document captured for job ${jobId}`, { imageUri });
+  }
+
+  logDocumentClassify(documentId: string, classification: string) {
+    this.info(`Document classified: ${documentId}`, { classification });
+  }
+
+  logExport(jobId: string, documentCount: number) {
+    this.info(`Job exported: ${jobId}`, { documentCount });
   }
 }
 

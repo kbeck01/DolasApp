@@ -14,23 +14,17 @@ import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
-      return;
-    }
-
-    if (password.length < 4) {
-      Alert.alert('Error', 'Password must be at least 4 characters');
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email');
       return;
     }
 
     setIsLoading(true);
-    const success = await login(email, password);
+    const success = await login(email);
     setIsLoading(false);
 
     if (!success) {
@@ -45,8 +39,8 @@ export default function LoginScreen() {
     >
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Moving & Storage</Text>
-          <Text style={styles.subtitle}>Driver Portal</Text>
+          <Text style={styles.title}>Pegasus</Text>
+          <Text style={styles.subtitle}>Document Capture</Text>
         </View>
 
         <View style={styles.form}>
@@ -65,20 +59,6 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>PASSWORD</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter password"
-              placeholderTextColor={colors.textDisabled}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete="password"
-              editable={!isLoading}
-            />
-          </View>
-
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleLogin}
@@ -91,7 +71,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <View style={styles.hint}>
-            <Text style={styles.hintText}>Demo: Use any email and password (4+ chars)</Text>
+            <Text style={styles.hintText}>Enter your email to get started</Text>
           </View>
         </View>
       </View>

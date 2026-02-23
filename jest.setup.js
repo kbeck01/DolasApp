@@ -49,6 +49,7 @@ jest.mock('expo-router', () => ({
     back: jest.fn(),
   })),
   useLocalSearchParams: jest.fn(() => ({})),
+  useFocusEffect: jest.fn((cb) => cb()),
   Stack: {
     Screen: jest.fn(({ children }) => children),
   },
@@ -61,12 +62,69 @@ jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: jest.fn(() =>
     Promise.resolve({ status: 'granted' })
   ),
+  requestMediaLibraryPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: 'granted' })
+  ),
   launchCameraAsync: jest.fn(() =>
     Promise.resolve({
       canceled: false,
       assets: [{ uri: 'mock://photo.jpg' }],
     })
   ),
+  launchImageLibraryAsync: jest.fn(() =>
+    Promise.resolve({
+      canceled: false,
+      assets: [{ uri: 'mock://library-photo.jpg' }],
+    })
+  ),
+}));
+
+// Mock expo-file-system (v19 class-based API)
+jest.mock('expo-file-system', () => {
+  class MockFile {
+    constructor(...uris) {
+      this.uri = uris
+        .map((u) => (typeof u === 'string' ? u : u.uri || ''))
+        .join('/');
+    }
+    write() {}
+    text() { return Promise.resolve(''); }
+    get exists() { return false; }
+    create() {}
+    delete() {}
+  }
+  class MockDirectory {
+    constructor(...uris) {
+      this.uri = uris
+        .map((u) => (typeof u === 'string' ? u : u.uri || ''))
+        .join('/');
+    }
+    list() { return []; }
+    get exists() { return false; }
+    create() {}
+    delete() {}
+  }
+  return {
+    File: MockFile,
+    Directory: MockDirectory,
+    Paths: {
+      cache: { uri: 'file:///mock-cache/' },
+      document: { uri: 'file:///mock-document/' },
+      bundle: { uri: 'file:///mock-bundle/' },
+    },
+  };
+});
+
+// Mock expo-mail-composer
+jest.mock('expo-mail-composer', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  composeAsync: jest.fn(() => Promise.resolve({ status: 'sent' })),
+}));
+
+// Mock expo-sharing
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  shareAsync: jest.fn(() => Promise.resolve()),
 }));
 
 // Mock react-native-safe-area-context
@@ -79,6 +137,21 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
+// Mock JobContext
+jest.mock('./src/context/JobContext', () => {
+  const React = require('react');
+  return {
+    JobProvider: ({ children }) => React.createElement(React.Fragment, null, children),
+    useJob: jest.fn(() => ({
+      currentJob: null,
+      documents: [],
+      startJob: jest.fn(),
+      addDocument: jest.fn(),
+      clearJob: jest.fn(),
+    })),
+  };
+});
+
 // Mock logger
 jest.mock('./src/utils/logger', () => ({
   logger: {
@@ -87,9 +160,10 @@ jest.mock('./src/utils/logger', () => ({
     warn: jest.fn(),
     error: jest.fn(),
     logAuth: jest.fn(),
-    logOrderStatusChange: jest.fn(),
-    logCameraCapture: jest.fn(),
-    logOrderLoad: jest.fn(),
     logNavigation: jest.fn(),
+    logJobCreate: jest.fn(),
+    logDocumentCapture: jest.fn(),
+    logDocumentClassify: jest.fn(),
+    logExport: jest.fn(),
   },
 }));
