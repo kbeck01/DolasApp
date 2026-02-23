@@ -2,14 +2,7 @@
 export const colors = {
   // Primary Colors - Bold and Clear
   primary: '#FF6B35',        // High-visibility orange
-  primaryDark: '#D95427',
   primaryLight: '#FF8F66',
-
-  // Status Colors - Clear Visual Indicators
-  pending: '#FDB813',        // Bright yellow
-  inTransit: '#2E86DE',      // Strong blue
-  delivered: '#10AC84',      // Clear green
-  cancelled: '#EE5A6F',      // Alert red
 
   // Background Colors
   background: '#FFFFFF',
@@ -24,8 +17,6 @@ export const colors = {
 
   // UI Elements
   border: '#E0E0E0',
-  borderDark: '#BDBDBD',
-  shadow: '#000000',
 
   // Semantic Colors
   success: '#10AC84',
