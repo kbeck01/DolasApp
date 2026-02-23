@@ -11,22 +11,9 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
+import { CLASSIFICATIONS, CLASSIFICATION_LABELS } from '../../src/constants/classifications';
 import { DocumentClassification } from '../../src/types';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
-
-const CLASSIFICATIONS: { label: string; value: DocumentClassification; color: string }[] = [
-  { label: 'Bill of Lading', value: 'bill_of_lading', color: colors.info },
-  { label: 'Proof of Delivery', value: 'proof_of_delivery', color: colors.success },
-  { label: 'Receipt', value: 'receipt', color: colors.warning },
-  { label: 'Inventory', value: 'inventory', color: colors.primary },
-];
-
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  bill_of_lading: 'Bill of Lading',
-  proof_of_delivery: 'Proof of Delivery',
-  receipt: 'Receipt',
-  inventory: 'Inventory',
-};
 
 export default function EditDocumentScreen() {
   const router = useRouter();

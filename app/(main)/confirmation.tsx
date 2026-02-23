@@ -9,14 +9,8 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useJob } from '../../src/context/JobContext';
+import { CLASSIFICATION_LABELS } from '../../src/constants/classifications';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
-
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  bill_of_lading: 'Bill of Lading',
-  proof_of_delivery: 'Proof of Delivery',
-  receipt: 'Receipt',
-  inventory: 'Inventory',
-};
 
 export default function ConfirmationScreen() {
   const router = useRouter();

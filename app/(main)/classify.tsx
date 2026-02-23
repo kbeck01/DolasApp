@@ -11,15 +11,9 @@ import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { CommonActions } from '@react-navigation/native';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
+import { CLASSIFICATIONS } from '../../src/constants/classifications';
 import { DocumentClassification } from '../../src/types';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
-
-const CLASSIFICATIONS: { label: string; value: DocumentClassification; color: string }[] = [
-  { label: 'Bill of Lading', value: 'bill_of_lading', color: colors.info },
-  { label: 'Proof of Delivery', value: 'proof_of_delivery', color: colors.success },
-  { label: 'Receipt', value: 'receipt', color: colors.warning },
-  { label: 'Inventory', value: 'inventory', color: colors.primary },
-];
 
 export default function ClassifyScreen() {
   const navigation = useNavigation();

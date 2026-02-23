@@ -18,21 +18,8 @@ import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
 import { generateJobZip } from '../../src/utils/exportUtils';
 import { logger } from '../../src/utils/logger';
+import { CLASSIFICATION_LABELS, CLASSIFICATION_COLORS } from '../../src/constants/classifications';
 import { colors, fontSize, spacing, borderRadius, touchTarget } from '../../src/theme/colors';
-
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  bill_of_lading: 'Bill of Lading',
-  proof_of_delivery: 'Proof of Delivery',
-  receipt: 'Receipt',
-  inventory: 'Inventory',
-};
-
-const CLASSIFICATION_COLORS: Record<string, string> = {
-  bill_of_lading: colors.info,
-  proof_of_delivery: colors.success,
-  receipt: colors.warning,
-  inventory: colors.primary,
-};
 
 export default function ExportScreen() {
   const router = useRouter();
