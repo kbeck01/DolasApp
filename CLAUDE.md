@@ -193,14 +193,13 @@ Pegasus-App/
 
 See §10 for the complete list.
 
-### Unused Permissions (Must Be Cleaned Up Before Play Store Submission)
+### Permissions
 
-The following permissions are declared in `app.json` but **not used anywhere in the codebase**. Do not add code to use them without an explicit feature request. Remove them before submitting to stores:
+Only the permissions actually used are declared in `app.json`:
+- `NSCameraUsageDescription` / `android.permission.CAMERA` — used by expo-image-picker in capture.tsx
+- `NSPhotoLibraryUsageDescription` / `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` — used by expo-image-picker in capture.tsx
 
-- `NSLocationWhenInUseUsageDescription` (iOS)
-- `ACCESS_FINE_LOCATION` (Android)
-- `ACCESS_COARSE_LOCATION` (Android)
-- `RECORD_AUDIO` (Android)
+Do not add new permission declarations without a corresponding feature implementation.
 
 ### EAS Submission Placeholders
 
@@ -579,10 +578,6 @@ This section tracks existing problems. When working on a related feature, fix th
 **Location:** `App.tsx`, `index.ts`
 **Problem:** `package.json` sets `"main": "expo-router/entry"`, so Expo Router handles the real entry point. `index.ts` and `App.tsx` are never executed by the running app. They exist only as the compilation target for `App.test.tsx`. This is misleading.
 **Current stance:** Leave in place — removing them would break the only existing test. When a proper test infrastructure is established (tests for actual screens), migrate `App.test.tsx` and then delete these files.
-
-### Compliance: Unused Permissions in app.json
-
-**See §4.** Must be removed before Play Store or App Store submission.
 
 ### Compliance: EAS Placeholder Values
 
