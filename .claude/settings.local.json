@@ -11,7 +11,23 @@
       "Bash(findstr:*)",
       "Bash(ls:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx jest --no-cache)"
+      "Bash(npx jest --no-cache)",
+      "Bash(cd /c/Repos/Pegasus-App && npx jest \"app/\\\\\\(main\\\\\\)/capture.test.tsx\" --forceExit 2>&1)",
+      "Bash(cd:*)",
+      "Bash(cd /c/Repos/Pegasus-App && npx jest \"src/utils/exportUtils.test.ts\" --forceExit 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && npx jest --forceExit 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && git push 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && npx jest \"src/context/AuthContext.test.tsx\" --forceExit 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && npx jest \"src/constants/classifications.test.ts\" --forceExit 2>&1)",
+      "Bash(git add:*)",
+      "Bash(git log:*)",
+      "Bash(cd /c/Repos/Pegasus-App && git add metro.config.js && git commit -m \"$\\(cat <<'EOF'\nchore\\(metro\\): add metro.config.js to block test files from app bundle\n\nExpo Router's require.context scans the entire app/ directory, causing\nMetro to attempt bundling capture.test.tsx \\(and any other *.test.tsx\nfiles placed in app/\\). Those test files import @testing-library/react-\nnative, which imports Node's 'console' module — a Node stdlib that does\nnot exist in the React Native runtime, producing a bundling failure.\n\nAdded metro.config.js with a resolver.blockList that excludes *.test.*\nand *.spec.* files from the bundle. Jest is unaffected — it uses its\nown module resolution and never consults metro.config.js.\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && git add CLAUDE.md && git commit -m \"$\\(cat <<'EOF'\ndocs\\(CLAUDE.md\\): add metro.config.js to §3 app structure\n\nNew file created in the accompanying chore\\(metro\\) commit. Documents its\npurpose \\(blockList to exclude test files from the Metro bundle\\) so future\nsessions know it exists and why.\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && git add \"app/\\(main\\)/export.tsx\" app.json && git commit -m \"$\\(cat <<'EOF'\nfeat\\(export\\): remove EMAIL CSV and SHARE/SAVE buttons; keep only EXPORT ZIP\n\nThe export screen now has a single export action: EXPORT ZIP. This\ngenerates a zip containing the CSV manifest and all captured images,\nthen opens the OS share sheet.\n\nRemoved from export.tsx:\n  - generateCsvFile\\(\\) helper \\(wrote CSV-only to Paths.cache\\)\n  - handleEmailCsv\\(\\) and handleShare\\(\\) handlers\n  - EMAIL CSV and SHARE / SAVE TouchableOpacity elements\n  - emailButton and shareButton StyleSheet entries\n  - File and Paths imports from expo-file-system \\(no longer needed\\)\n  - * as MailComposer import from expo-mail-composer\n\nRemoved expo-mail-composer from app.json plugins — no longer referenced\nanywhere in the codebase.\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push 2>&1)",
+      "Bash(cd /c/Repos/Pegasus-App && git add \"app/\\(main\\)/export.tsx\" && git commit -m \"$\\(cat <<'EOF'\nfeat\\(export\\): remove DONE button — back button handles navigation\n\nThe native stack back button already returns to the home screen.\nindex.tsx's useFocusEffect calls clearJob\\(\\) on focus, so the job context\nis cleared regardless of how the user navigates back. handleDone and the\ndoneButton style are no longer needed.\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push 2>&1)",
+      "Bash(git:*)",
+      "Bash(npx jest:*)",
+      "WebFetch(domain:docs.expo.dev)"
     ]
   }
 }
