@@ -10,7 +10,6 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useNavigation } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../src/context/AuthContext';
 import { useJob } from '../../src/context/JobContext';
 import { JobService } from '../../src/services/jobService';
 import { logger } from '../../src/utils/logger';
@@ -24,7 +23,6 @@ export default function HomeScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
   const { startJob, clearJob } = useJob();
 
   useFocusEffect(
@@ -189,13 +187,6 @@ export default function HomeScreen() {
         >
           <Text style={styles.newJobText}>NEW JOB</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={logout}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.logoutText}>LOG OUT</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -295,19 +286,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textLight,
     letterSpacing: 1,
-  },
-  logoutButton: {
-    backgroundColor: colors.backgroundDark,
-    borderRadius: borderRadius.medium,
-    padding: spacing.md,
-    alignItems: 'center',
-    minHeight: touchTarget.minHeight,
-    justifyContent: 'center',
-  },
-  logoutText: {
-    fontSize: fontSize.large,
-    fontWeight: '600',
-    color: colors.textLight,
   },
   headerButton: {
     padding: spacing.sm,
