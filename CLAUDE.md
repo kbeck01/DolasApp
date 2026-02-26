@@ -32,7 +32,7 @@ If you are a new Claude session with no prior context, read this file entirely b
 
 Pegasus is a mobile document capture and logging tool built for truck drivers and logistics workers. The app allows a driver to create a named "job" (identified by a job number), photograph delivery-related documents at a job site, classify each document by type, and then export the full job log as a CSV file — either by email or via the native OS share sheet.
 
-The app is entirely **local-first**: all data is stored on the device using AsyncStorage and the device filesystem. There is no backend server, no cloud sync, and no user account system (authentication is a local email-only session, not verified against any server).
+The app is entirely **local-first**: all data is stored on the device using AsyncStorage and the device filesystem. There is no backend server, no cloud sync, and no user authentication of any kind.
 
 ### Who It Is For
 
@@ -40,7 +40,7 @@ Drivers employed by moving and storage companies. The UI is designed for field u
 
 ### Core Workflow
 
-1. Driver opens the app and enters their email to begin a local session.
+1. Driver opens the app directly to the jobs list — no login required.
 2. Driver creates a new **job** by entering a job name or number.
 3. Driver captures one or more documents using the device camera or photo library.
 4. Each document is **classified** as one of four types:
@@ -88,12 +88,9 @@ Drivers employed by moving and storage companies. The UI is designed for field u
 ```
 Pegasus-App/
 ├── app/                        Expo Router screens and layouts (file-system routing)
-│   ├── _layout.tsx             Root layout: wraps everything in AuthProvider, enforces auth guard
+│   ├── _layout.tsx             Root layout: bare Stack — no auth guard, routes directly to (main)
 │   ├── +not-found.tsx          404 catch-all for unmatched routes
-│   ├── (auth)/                 Route group: unauthenticated screens
-│   │   ├── _layout.tsx         Auth group Stack (no header)
-│   │   └── login.tsx           Email-only login screen (local session, not server-verified)
-│   └── (main)/                 Route group: authenticated app screens
+│   └── (main)/                 Route group: all app screens
 │       ├── _layout.tsx         Main Stack with styled headers, wraps all screens in JobProvider
 │       ├── index.tsx           Jobs list (home screen) — multi-select delete, tap to open
 │       ├── create-job.tsx      New job creation — enter job name/number
@@ -105,7 +102,6 @@ Pegasus-App/
 │
 ├── src/
 │   ├── context/
-│   │   ├── AuthContext.tsx     Auth state: isAuthenticated, isLoading, driverEmail; login/logout
 │   │   └── JobContext.tsx      Current job state: currentJob, documents; all in-session mutations
 │   ├── constants/
 │   │   └── classifications.ts  CLASSIFICATIONS array, CLASSIFICATION_LABELS and _COLORS records
@@ -138,7 +134,6 @@ Pegasus-App/
 
 | Route | Screen Component | Purpose |
 |---|---|---|
-| `/(auth)/login` | `LoginScreen` | Email entry; calls `login(email)` from AuthContext |
 | `/(main)` | `HomeScreen` | Jobs list; multi-select; tap to open job |
 | `/(main)/create-job` | `CreateJobScreen` | Single input: job name/number |
 | `/(main)/capture` | `CaptureScreen` | Camera or gallery image picker |
@@ -150,7 +145,7 @@ Pegasus-App/
 ### Navigation Patterns (Expo Router)
 
 - `router.push(url)` — forward navigation, adds to stack
-- `router.replace(url)` — replaces current screen (used for auth redirects and "Capture Next")
+- `router.replace(url)` — replaces current screen (used for "Capture Next")
 - `router.back()` — simple back
 - `router.dismissAll()` — pop entire stack (used after job done/deleted)
 - `navigation.dispatch(CommonActions.reset({...}))` — full stack rebuild (used in `classify.tsx` after saving a document to ensure back-navigation from confirmation goes to job detail, not back through the classification pipeline)
@@ -158,11 +153,9 @@ Pegasus-App/
 ### Data Flow
 
 **AsyncStorage keys:**
-- `@pegasus_session` — stores `{ email: string, timestamp: string }` as JSON
 - `@pegasus_jobs` — stores the entire `Job[]` array (each `Job` embeds its `Document[]`) as JSON
 
 **Context responsibilities:**
-- `AuthContext` — holds session state; reads/writes `@pegasus_session`
 - `JobContext` — holds the currently active job in memory; delegates all persistence to `JobService`
 - `JobService` — the single source of truth for all reads/writes to `@pegasus_jobs`; performs a full read-mutate-write cycle on every operation
 
@@ -182,8 +175,7 @@ Pegasus-App/
 
 ### Architecture Decisions (Intentional)
 
-- **No backend.** All data lives on the device. There is no API, no cloud sync, no remote auth. This is intentional for the MVP.
-- **Local-only auth.** Login stores an email in AsyncStorage. It is not verified against any server. This is a "who is using this device" identifier, not real authentication.
+- **No backend.** All data lives on the device. There is no API, no cloud sync, and no authentication of any kind. This is intentional for the MVP.
 - **Image persistence is implemented.** After capture, images are copied to `FileSystem.documentDirectory/pegasus_images/` before the URI is passed to classify.tsx. See §9 for the hard rule and implementation details.
 - **Single JSON blob persistence.** All jobs and all embedded documents are stored as one JSON string in AsyncStorage. This is fine for an MVP with small document counts but will not scale well to hundreds of jobs.
 - **No analytics.** `MockTransport` in the logger is a placeholder for Sentry or equivalent. Not wired up.
@@ -198,7 +190,9 @@ See §10 for the complete list.
 
 Only the permissions actually used are declared in `app.json`:
 - `NSCameraUsageDescription` / `android.permission.CAMERA` — used by expo-image-picker in capture.tsx
-- `NSPhotoLibraryUsageDescription` / `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE` — used by expo-image-picker in capture.tsx
+- `NSPhotoLibraryUsageDescription` — iOS only, declared via the expo-image-picker plugin config in app.json
+
+`READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE` are **not** explicitly declared — they are deprecated on Android 13+ (API 33+). The expo-image-picker plugin adds the correct scoped-storage permissions (`READ_MEDIA_IMAGES`) automatically through its own AndroidManifest.xml for modern API levels.
 
 Do not add new permission declarations without a corresponding feature implementation.
 
@@ -248,19 +242,19 @@ Do not add new permission declarations without a corresponding feature implement
 ### Naming Conventions
 
 **Components:** `PascalCase` with suffix that describes role (`Screen`, `Context`, `Provider`, `Layout`).
-Examples: `HomeScreen`, `AuthContext`, `JobProvider`, `MainLayout`
+Examples: `HomeScreen`, `JobProvider`, `MainLayout`
 
 **Functions:** `camelCase`. Event handlers prefixed with `handle`: `handleLogin`, `handleDeleteJob`, `handleTakePhoto`.
 
-**Hooks:** `camelCase` with `use` prefix: `useAuth`, `useJob`.
+**Hooks:** `camelCase` with `use` prefix: `useJob`.
 
-**Boolean state/props:** prefixed with `is` or `has`: `isLoading`, `isAuthenticated`, `isBusy`, `isSaving`, `isEditingName`, `selectionMode` (exception: `selectionMode` is an existing pattern — do not rename it).
+**Boolean state/props:** prefixed with `is` or `has`: `isLoading`, `isBusy`, `isSaving`, `isEditingName`, `selectionMode` (exception: `selectionMode` is an existing pattern — do not rename it).
 
 **Service classes:** `PascalCase` with `Service` suffix. Methods are all static. Do not instantiate: `JobService.getJobs()`, never `new JobService()`.
 
 **Constants (module-level):** `SCREAMING_SNAKE_CASE` for true constants: `CLASSIFICATIONS`, `CLASSIFICATION_LABELS`.
 
-**AsyncStorage keys:** prefixed with `@pegasus_`: `@pegasus_session`, `@pegasus_jobs`.
+**AsyncStorage keys:** prefixed with `@pegasus_`: `@pegasus_jobs`.
 
 **StyleSheet keys:** `camelCase`, following the pattern: `container`, `content`, `header`, `footer`, `button`, `buttonText`, `buttonDisabled`, `label`, `value`.
 
@@ -285,7 +279,6 @@ import * as ImagePicker from 'expo-image-picker';
 
 // 5. Internal: contexts
 import { useJob } from '../../src/context/JobContext';
-import { useAuth } from '../../src/context/AuthContext';
 
 // 6. Internal: services
 import { JobService } from '../../src/services/jobService';
@@ -354,7 +347,6 @@ Mock AsyncStorage for all jobService tests using the mock already registered in 
 Test that components interact correctly with context and that context interacts correctly with AsyncStorage. Mount real components with mocked native modules.
 
 What to integration test:
-- `AuthContext`: login writes to AsyncStorage, logout removes it, checkSession restores state on mount
 - `JobContext`: startJob populates documents, addDocument appends and updates currentJob, deleteDocument removes and updates state
 - Screen + context wiring: `HomeScreen` renders jobs from `JobService`, `ExportScreen` reflects state changes after rename, `CreateJobScreen` calls `JobService.createJob` and `startJob`
 
@@ -377,8 +369,6 @@ Required acceptance tests for core flows:
 3. **Multi-select delete:** Load three jobs → Activate selection mode via long press → Select two → Delete → Assert only one job remains in AsyncStorage.
 
 4. **Edit flow:** Load job with one document → Navigate to edit-document → Change classification → Assert document in AsyncStorage has updated classification and recalculated filename.
-
-5. **Session persistence:** Call login → Simulate app restart (remount AuthProvider) → Assert `isAuthenticated` is true and `driverEmail` matches.
 
 If a change touches a flow not covered above, write the acceptance test for that flow before marking the change complete.
 
@@ -421,7 +411,7 @@ new shared constant when CLASSIFICATION_LABELS is extracted."
 - `chore` — dependency updates, config changes, build scripts
 - `docs` — documentation changes only
 
-**Scope:** the primary file or module affected, without extension. Examples: `jobService`, `export`, `classify`, `AuthContext`, `colors`
+**Scope:** the primary file or module affected, without extension. Examples: `jobService`, `export`, `classify`, `colors`
 
 **Before committing:** state out loud what the commit will contain and why, so the developer can confirm before it's made.
 
@@ -476,8 +466,7 @@ Summarize:
 
 Navigation and state changes have cascading effects that are easy to break and hard to debug. Get explicit approval before touching:
 - Any `_layout.tsx` file
-- `AuthContext.tsx` or `JobContext.tsx`
-- The auth guard logic in `app/_layout.tsx`
+- `JobContext.tsx`
 - The stack reset in `classify.tsx`
 - Any change that adds, removes, or renames a route
 
@@ -646,3 +635,5 @@ the bug is resolved in the accompanying feat(capture) commit.
 ### When in Doubt
 
 If you are unsure whether a change warrants a CLAUDE.md update, **err on the side of updating it.** A spurious documentation update costs nothing. A missing one costs the next session the time it takes to rediscover what changed and why.
+
+At the end of your response, add a smiley face to let me know you are still working with the full context of this file
